@@ -6,6 +6,7 @@ use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use App\Models\Kelas;
 use App\Models\Mahasiswa_MataKuliah;
+use Illuminate\Support\Facades\Storage;
 
 class MahasiswaController extends Controller
 {
@@ -35,7 +36,6 @@ class MahasiswaController extends Controller
      */
     public function create()
     {
-        
         $kelas = Kelas::all();
         return view('mahasiswas.create', compact('kelas'));
     }
@@ -49,38 +49,44 @@ class MahasiswaController extends Controller
     public function store(Request $request)
     {
         //melakukan validasi data
-        $request->validate([
-            'Nim' => 'required',
-            'Nama' => 'required',
-            'Kelas' => 'required',
-            'Jurusan' => 'required',
-            'No_Handphone' => 'required',
-            'Email' => 'required',
-            'TanggalLahir' => 'required',
-            ]);
-            //fungsi eloquent untuk menambah data
-            $mahasiswa = new Mahasiswa;
-            $mahasiswa->nim = $request->get('Nim');
-            $mahasiswa->nama = $request->get('Nama');
-            $mahasiswa->kelas_id = $request->get('Kelas');
-            $mahasiswa->jurusan = $request->get('Jurusan');
-            $mahasiswa->no_handphone = $request->get('No_Handphone');
-            $mahasiswa->email = $request->get('Email');
-            $mahasiswa->tanggalLahir = $request->get('TanggalLahir');
-            $mahasiswa->save();
+            $request->validate([
+                'Nim' => 'required',
+                'Nama' => 'required',
+                'Kelas' => 'required',
+                'Jurusan' => 'required',
+                'No_Handphone' => 'required',
+                'Email' => 'required',
+                'TanggalLahir' => 'required',
+                'image' => 'required',
+                ]);
+                //fungsi eloquent untuk menambah data
+                $mahasiswa = new Mahasiswa;
+                $mahasiswa->nim = $request->get('Nim');
+                $mahasiswa->nama = $request->get('Nama');
+                $mahasiswa->kelas_id = $request->get('Kelas');
+                $mahasiswa->jurusan = $request->get('Jurusan');
+                $mahasiswa->no_handphone = $request->get('No_Handphone');
+                $mahasiswa->email = $request->get('Email');
+                $mahasiswa->tanggalLahir = $request->get('TanggalLahir');
+                if ($request->file('image')) {
+                    $image_name = $request->file('image')->store('images', 'public');
+                }
 
-            $kelas = new Kelas;
-            $kelas->id = $request->get('Kelas');
+                $mahasiswa->featured_image = $image_name;
+                $mahasiswa->save();
 
-            //fungsi eloquent untuk menambah data dengan relasi belongsTo
+                $kelas = new Kelas;
+                $kelas->id = $request->get('Kelas');
 
-            $mahasiswa->kelas()->associate($kelas);
-            $mahasiswa->save();
+                //fungsi eloquent untuk menambah data dengan relasi belongsTo
+
+                $mahasiswa->kelas()->associate($kelas);
+                $mahasiswa->save();
 
 
-            //jika data berhasil ditambahkan, akan kembali ke halaman utama
-            return redirect()->route('mahasiswas.index')
-            ->with('success', 'Mahasiswa Berhasil Ditambahkan');
+                //jika data berhasil ditambahkan, akan kembali ke halaman utama
+                return redirect()->route('mahasiswas.index')
+                ->with('success', 'Mahasiswa Berhasil Ditambahkan');
     }
 
     /**
@@ -92,8 +98,8 @@ class MahasiswaController extends Controller
     public function show($Nim)
     {
         //menampilkan detail data dengan menemukan/berdasarkan Nim Mahasiswa
-        $Mahasiswa = Mahasiswa::find($Nim);
-        return view('mahasiswas.detail', compact('Mahasiswa'));
+        $Mahasiswa = Mahasiswa::with('kelas')->where('Nim' , $Nim)->first();
+        return view('mahasiswas.detail', ['Mahasiswa' => $Mahasiswa]);
     }
 
     /**
@@ -128,6 +134,7 @@ class MahasiswaController extends Controller
             'No_Handphone' => 'required',
             'Email' => 'required',
             'TanggalLahir' => 'required',
+
             ]);
 
         $mahasiswa = Mahasiswa::with('kelas')->where('Nim' , $Nim)->first();
@@ -138,6 +145,16 @@ class MahasiswaController extends Controller
         $mahasiswa->no_handphone = $request->get('No_Handphone');
         $mahasiswa->email = $request->get('Email');
         $mahasiswa->tanggalLahir = $request->get('TanggalLahir');
+        if ($request->file('image') != null && $mahasiswa->featured_image && file_exists(storage_path('app/public/' . $mahasiswa->featured_image))) {
+            Storage::delete(['public/'. $mahasiswa->featured_image]);
+            $image_name = $request->file('image')->store('image', 'public');
+        } elseif ($request->file('image') != null) {
+            $image_name = $request->file('image')->store('image', 'public');
+        }
+        else {
+            $image_name = $mahasiswa->featured_image;
+        }
+        $mahasiswa->featured_image = $image_name;
         $mahasiswa->save();
 
         $kelas = new Kelas;

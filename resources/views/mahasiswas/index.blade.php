@@ -1,5 +1,4 @@
 @extends('mahasiswas.layout')
-
 @section('content')
     <div class="row">
         <div class="col-lg-12 margin-tb">
@@ -11,7 +10,7 @@
             </div>
         </div>
     </div>
-    <div>
+
     <div class="row justify-content-end">
         <div class="col-md-4">
             <form action="{{ route('mahasiswas.index') }}" accept-charset="UTF-8" method="get">
@@ -32,45 +31,48 @@
             </form>
         </div>
     </div>
-    
+
+
     @if ($message = Session::get('success'))
-    <div class="alert alert-success">
-        <p>{{ $message }}</p>
-    </div>
+        <div class="alert alert-success">
+            <p>{{ $message }}</p>
+        </div>
     @endif
- 
-    <table class="table table-bordered">
-    <tr>
-        <th>Nim</th>
-        <th>Nama</th>
-        <th>Kelas</th>
-        <th>Jurusan</th>
-        <th>No_Handphone</th>
-        <th>Email</th>
-        <th>TanggalLahir</th>
-        <th width="500px">Action</th>
-    </tr>
+
+    <table width="700px" class="table table-bordered" >
+        <tr>
+            <th>Nim</th>
+            <th>Nama</th>
+            <th>Image</th>
+            <th>Kelas</th>
+            <th>Jurusan</th>
+            <th>No_Handphone</th>
+            <th>E-mail</th>
+            <th width="100px">Tanggal Lahir</th>
+            <th style="width:700%;">Action</th>
+        </tr>
     @foreach ($mahasiswas as $Mahasiswa)
     <tr>
- 
         <td>{{ $Mahasiswa->Nim }}</td>
         <td>{{ $Mahasiswa->Nama }}</td>
-        <td>{{ $Mahasiswa->Kelas->nama_kelas }}</td>
+        <td> <img width="100px" src="{{asset('storage/'.$Mahasiswa->featured_image)}}"> </td>
+        <td>{{ $Mahasiswa->Kelas->nama_kelas  }}</td>
         <td>{{ $Mahasiswa->Jurusan }}</td>
         <td>{{ $Mahasiswa->No_Handphone }}</td>
         <td>{{ $Mahasiswa->Email }}</td>
         <td>{{ $Mahasiswa->TanggalLahir }}</td>
         <td>
-        <form action="{{ route('mahasiswas.destroy',$Mahasiswa->Nim) }}" method="POST">
- 
-            <a class="btn btn-info" href="{{ route('mahasiswas.show',$Mahasiswa->Nim) }}">Show</a>
-            <a class="btn btn-primary" href="{{ route('mahasiswas.edit',$Mahasiswa->Nim) }}">Edit</a>
-            @csrf @method('DELETE')
-            <button type="submit" class="btn btn-danger">Delete</button>
-            <br><br>
-            <a class="btn btn-warning" href="{{ route('mahasiswas.showNilai', $Mahasiswa->Nim) }}">Nilai</a>
-        </form>
-         </td>
+            <form action="{{ route('mahasiswas.destroy',$Mahasiswa->Nim) }}" method="POST">
+                <a class="btn btn-info" href="{{ route('mahasiswas.show',$Mahasiswa->Nim) }}">Show</a>
+                <br><br>
+                <a class="btn btn-primary" href="{{ route('mahasiswas.edit',$Mahasiswa->Nim) }}">Edit</a>
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <br><br>
+                <a class="btn btn-warning" href="{{ route('mahasiswas.showNilai', $Mahasiswa->Nim) }}">Nilai</a>
+            </form>
+        </td>
     </tr>
     @endforeach
     </table>
