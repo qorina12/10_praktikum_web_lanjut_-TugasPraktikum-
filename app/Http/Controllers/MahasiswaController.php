@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Kelas;
 use App\Models\Mahasiswa_MataKuliah;
 use Illuminate\Support\Facades\Storage;
+use PDF;
 
 class MahasiswaController extends Controller
 {
@@ -190,5 +191,16 @@ class MahasiswaController extends Controller
             ->where('mahasiswa_id', $Nim)
             ->get();
         return view('mahasiswas.nilai', compact('mahasiswa', 'nilai'));
+    }
+
+    public function cetak_pdf($Nim){
+        $mahasiswa = Mahasiswa_MataKuliah::with('mahasiswa')
+            ->where('mahasiswa_id', $Nim)
+            ->first();
+        $nilai = Mahasiswa_MataKuliah::with('matakuliah')
+            ->where('mahasiswa_id', $Nim)
+            ->get();
+        $pdf = PDF::loadview('mahasiswas.mahasiswa_pdf', compact('mahasiswa', 'nilai'));
+        return $pdf->stream();
     }
 }
